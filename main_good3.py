@@ -5,7 +5,7 @@ from pyb import Servo, Pin
 # -------------------- 水泵与报警控制 --------------------
 pump_pin_red = Pin('P0', Pin.OUT)
 pump_pin_black = Pin('P1', Pin.OUT)
-alarm_pin = Pin('P2', Pin.OUT)  # 报警指示引脚：触发报警时置高
+alarm_pin = Pin('P2', Pin.OUT,Pin.PULL_DOWN)  # 报警指示引脚：触发报警时置高
 pump_pin_red.low()       # 初始低电平
 pump_pin_black.low()
 alarm_pin.low()      # 报警初始关闭
@@ -21,8 +21,10 @@ pan_servo.calibration(500, 2500, 500)
 tilt_servo.calibration(500, 2500, 500)
 
 # PID 控制器参数
-pan_pid =  PID(p=0.04, i=0.009, d=0.0004, imax=90)#在线调试使用这个PID
-tilt_pid = PID(p=0.04, i=0.009, d=0.0004, imax=90)#在线调试使用这个PID
+#pan_pid =  PID(p=0.05, i=0.009, d=0.0004 imax=90)#在线调试使用这个PID
+#tilt_pid = PID(p=0.05, i=0.009, d=0.0004, imax=90)#在线调试使用这个PID
+pan_pid =  PID(p=0.09, i=0.01,d=0.0009, imax=90)#在线调试使用这个PID
+tilt_pid = PID(p=0.09, i=0.01,d=0.0009,imax=90)#在线调试使用这个PID
 
 # -------------------- 摄像头初始化 --------------------
 sensor.reset()
@@ -49,7 +51,7 @@ def update_roi():
 update_roi()  # 初始化ROI
 
 # -------------------- 颜色阈值设置 --------------------
-shift_threshold = (15, 37, -18, 0, 16, 43)
+shift_threshold = (28, 77, -13, 59, 31, 127)
 red_threshold  = (15, 87, 5, 127, -10, 51)
 #shift_threshold = red_threshold
 
@@ -143,6 +145,7 @@ while True:
             set_servo_angle(tilt_servo, new_tilt, TILT_MIN, TILT_MAX)
 
             print("舵机位置 -> 水平: {}° 垂直: {}°".format(pan_servo.angle(), tilt_servo.angle()))
+
             if is_target_centered(max_blob):
                 pump_on()
                 print("目标对准，水泵启动")
@@ -168,6 +171,7 @@ while True:
             pump_off()
             pump_work_start_time = None  # 重置水泵工作时间
             print("没有检测到目标")
+
 
             # 达到节能超时，进入节能模式,且舵机归位
             if time.ticks_diff(current_time, last_detection_time) > energy_saving_timeout:

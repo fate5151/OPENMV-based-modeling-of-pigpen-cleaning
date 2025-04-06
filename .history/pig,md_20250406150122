@@ -1,0 +1,31 @@
+```mermaid
+graph LR
+    A[初始化硬件] --> B[主循环开始]
+    B --> C[捕获图像并校正]
+    C --> D{检测到色块?}
+    D -->|是| E[退出节能模式]
+    E --> F[选择最大色块]
+    F --> G[计算坐标误差]
+    G --> H[PID调整舵机角度]
+    H --> I{目标居中?}
+    I -->|是| J[启动水泵并计时]
+    J --> K{工作时间>40s?}
+    K -->|是| L[触发报警并重置]
+    K -->|否| B
+    I -->|否| M[关闭水泵]
+    M --> B
+    D -->|否| N[关闭水泵]
+    N --> O{超时30s?}
+    O -->|是| P[舵机归位+降低分辨率]
+    O -->|否| B
+    P --> B
+    B --> Q[发生异常]
+    Q --> R[触发报警]
+    R --> B
+
+    classDef logic fill:#f9f,stroke:#333;
+    classDef io fill:#bbf,stroke:#333;
+    classDef process fill:#bfb,stroke:#333;
+    class A,B,C,F,G,H,P process
+    class D,I,K,O,Q logic
+    class J,M,N,L,R io
