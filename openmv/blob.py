@@ -38,7 +38,7 @@ while True:
 
     # 绘制ROI区域边框（绿色）
     # 绘制中心区域边框（红色）
-
+    print(img.width(), img.height())
 
     # 对检测到的每个色块绘制矩形框和十字标记中心点
     if blobs:

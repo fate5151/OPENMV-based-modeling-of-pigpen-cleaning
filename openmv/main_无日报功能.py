@@ -15,7 +15,7 @@ pan_servo = Servo(1)  # 水平舵机（连接到P7）
 tilt_servo = Servo(2)  # 垂直舵机（连接到P8）
 
 PAN_MIN, PAN_MAX = 0, 180
-TILT_MIN, TILT_MAX = 20, 90
+TILT_MIN, TILT_MAX = 0, 90
 
 pan_servo.calibration(500, 2500, 500)
 tilt_servo.calibration(500, 2500, 500)
@@ -104,7 +104,7 @@ def exit_energy_saving_mode():
 
 # -------------------- 舵机初始化归位 --------------------
 pan_servo.angle(90)
-tilt_servo.angle(45)
+tilt_servo.angle(20)
 
 # -------------------- 超时及报警参数 --------------------
 energy_saving_timeout = 30000    # 30秒未检测到目标，进入节能模式
@@ -142,10 +142,10 @@ while True:
                 img.draw_cross(max_blob.cx(), max_blob.cy())
 
                 # PID 控制计算（以图像中心为参考）
-                pan_error = max_blob.cx() - (img.width() / 2)
-                tilt_error = max_blob.cy() - (img.height() / 2)
-                pan_output = pan_pid.get_pid(pan_error, 1) / 2
-                tilt_output = tilt_pid.get_pid(tilt_error, 1)
+                pan_error = max_blob.cx() - (img.width() / 2)  # 水平误差
+                tilt_error = max_blob.cy() - (img.height() / 2) ## 垂直误差
+                pan_output = pan_pid.get_pid(pan_error, 1) / 2  #水平舵机的旋转角度
+                tilt_output = tilt_pid.get_pid(tilt_error, 1)  #垂直舵机的旋转角度
 
                 new_pan = pan_servo.angle() + pan_output
                 new_tilt = tilt_servo.angle() - tilt_output

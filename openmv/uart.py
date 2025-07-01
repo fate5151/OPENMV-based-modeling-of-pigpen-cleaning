@@ -1,42 +1,78 @@
-import sensor, image, time
-import json
-from machine import UART
-#from pyb import UART
-# For color tracking to work really well you should ideally be in a very, very,
-# very, controlled enviroment where the lighting is constant...
-yellow_threshold   = (50, 68, 0, 80, 24, 84)
-# You may need to tweak the above settings for tracking green things...
-# Select an area in the Framebuffer to copy the color settings.
+# This work is licensed under the MIT license.
+# Copyright (c) 2013-2023 OpenMV LLC. All rights reserved.
+# https://github.com/openmv/openmv/blob/master/LICENSE
+#
+# UART Control
+#
+# This example shows how to use the serial port on your OpenMV Cam. Attach pin
+# P4 to the serial input of a serial LCD screen to see "Hello World!" printed
+# on the serial LCD display.
 
-sensor.reset() # Initialize the camera sensor.
-sensor.set_pixformat(sensor.RGB565) # use RGB565.
-sensor.set_framesize(sensor.QQVGA) # use QQVGA for speed.
-sensor.skip_frames(10) # Let new settings take affect.
-sensor.set_auto_whitebal(False) # turn this off.
-clock = time.clock() # Tracks FPS.
+import time,pyb
+from pyb import UART
 
-# OpenMV4 H7 Plus, OpenMV4 H7, OpenMV3 M7, OpenMV2 M4 的UART(3)是P4-TX P5-RX
-uart = UART(3, 9600)   #OpenMV RT 注释掉这一行，用下一行UART(1)
-#uart = UART(1, 115200)  #OpenMV RT 用UART(1)这行，注释掉上一行UART(3)
-# OpenMV RT 只有串口UART(1)，对应P4-TX P5-RX; OpenMV4 H7 Plus, OpenMV4 H7, OpenMV3 M7 的UART(1)是P0-RX P1-TX
 
-while(True):
-    clock.tick() # Track elapsed milliseconds between snapshots().
-    img = sensor.snapshot() # Take a picture and return the image.
+# Always pass UART 3 for the UART number for your OpenMV Cam.
+# The second argument is the UART baud rate. For a more advanced UART control
+# example see the BLE-Shield driver.
 
-    blobs = img.find_blobs([yellow_threshold])
-    if blobs:
-        #print('sum : %d'% len(blobs))
-        data=[]
-        for b in blobs:
-            # Draw a rect around the blob.
-            img.draw_rectangle(b.rect()) # rect
-            img.draw_cross(b.cx(), b.cy()) # cx, cy
-            data.append((b.cx(),b.cy()))
+rtc = pyb.RTC()
+rtc.datetime((2014, 5, 1, 4, 13, 0, 0, 0))
 
-        #{(1,22),(-3,33),(22222,0),(9999,12),(0,0)}
-        data_out = json.dumps(set(data))
-        uart.write(data_out +'\n')
-        print('you send:',data_out)
-    else:
-        print("not found!")
+
+uart = UART(1, 115200 , timeout_char=200)
+
+data1 = bytearray([0xFF],[0x01,0x02],[0xfe])
+
+data2 =bytearray([0xff,0x01,0x02,0x01,0x02,0xfe])
+
+data3 =bytearray([1,2,3,4,5,15,99,255,256,500])
+
+#data3 =bytearray(0xff,0x01,0x02,0x01,0x02,0xfe)
+
+def send_packet(data):
+    # 数据包格式：0xff + 长度(1字节) + 数据 + 校验和
+    start_byte = b'\xFF'
+    end_byte = b'\xFE'
+    #length = bytes([len(data)])
+    #checksum = sum(data) & 0xFF  # 简单求和校验
+    #packet = start_byte + length + bytes(data) + bytes([checksum])
+    packet = start_byte + bytes(data) + end_byte
+    uart.write(packet)
+
+while True:
+    print(rtc.datetime())
+
+    #uart.write("\x11")
+    #time.sleep_ms(1000)
+    #uart.write("\x22")
+    #time.sleep_ms(1000)
+    #uart.write("@LED_ON")
+    #time.sleep_ms(1000)
+    #uart.write("@LED_OFF")
+    #time.sleep_ms(1000)
+
+    #send_packet(0x01)
+
+    #uart.write(data1)
+    #print(f"data1:{data1}")
+    #time.sleep_ms(1000)
+
+    #uart.write(data2)
+    #print(f"data2:{data2}")
+    #time.sleep_ms(1000)
+
+    uart.write(data3)
+    print(f"data3:{data3}")
+    time.sleep_ms(1000)
+
+    #uart.write("hello string!")
+    #time.sleep_ms(1000)
+    #read_data=uart.read()
+    #print(read_data)
+
+    #uart.write("@LED_ON\r\n")
+    #time.sleep_ms(2000)
+    #uart.write("@LED_OFF\r\n")
+    #time.sleep_ms(2000)
+    #uart.write("1")
