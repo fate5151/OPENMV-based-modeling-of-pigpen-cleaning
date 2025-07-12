@@ -1,4 +1,4 @@
-import sensor, image, time
+import sensor, image, time,display
 
 # -------------------- 摄像头初始化 --------------------
 sensor.reset()
@@ -6,6 +6,8 @@ sensor.set_pixformat(sensor.RGB565)
 sensor.set_framesize(sensor.QVGA)  # QVGA分辨率
 sensor.skip_frames(time=2000)
 sensor.set_auto_whitebal(False)
+lcd = display.SPIDisplay()
+
 clock = time.clock()
 
 # -------------------- ROI设置函数 --------------------
@@ -31,8 +33,7 @@ shift_threshold = (30, 82, -19, 69, 34, 66)
 # -------------------- 主循环 --------------------
 while True:
     clock.tick()
-    img = sensor.snapshot()
-
+    img = sensor.snapshot().lens_corr(1.8)  # 使用镜头畸变校正
     # 在设定的ROI区域内查找所有符合颜色阈值的色块
     blobs = img.find_blobs([shift_threshold], merge=True)
 
@@ -47,3 +48,7 @@ while True:
             img.draw_cross(blob.cx(), blob.cy(), color=(0, 255, 0))
     else:
         print("没有检测到目标")
+    #lcd.display(img)
+    print(f"fps:{clock.fps()}")
+    lcd.write(img)  # 拍照并显示图像。
+

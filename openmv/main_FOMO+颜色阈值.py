@@ -143,8 +143,11 @@ while True:
         if not detection_list: continue  # 无检测时跳过
 
         # ---- 在这里添加：仅对第一类（i==1）提取最大框中心点 ----
-        if i == 1:
+        if i == 2:
             for x, y, w, h, score in detection_list:
+                # 在图像上绘制检测框
+                img.draw_rectangle((x, y, w, h), color=colors[i])
+
                 color_x = math.ceil(x - w )
                 color_y = math.ceil(y - h)
                 color_w = 3*w
@@ -176,10 +179,10 @@ while True:
             #x, y, w, h, score = max(detection_list, key=lambda b: b[2]*b[3])
             #center_x = x + w // 2
             #center_y = y + h // 2
+            center_x=0
+            center_y=0
             img.draw_circle((center_x, center_y, 12), color=colors[i])
             img.draw_cross((center_x, center_y), color=colors[i])
-            # 在图像上绘制检测框
-            img.draw_rectangle((x, y, w, h), color=colors[i])
             # 打印最大检测框的中心点坐标
             print("第二类最大检测框中心点：", "cx:",center_x, "cy:", center_y)
             print(detection_list)

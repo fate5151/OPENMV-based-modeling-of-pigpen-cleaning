@@ -10,11 +10,11 @@ sensor.set_pixformat(sensor.RGB565)    # 设置像素格式为RGB565（每个像
 
 sensor.set_framesize(sensor.QVGA)      # 设置帧尺寸为QVGA（320x240分辨率）
 #sensor.set_windowing((265, 240))       # 设置240x240的采集窗口（中心裁剪）
-sensor.skip_frames(time=2000)          # 等待2秒让相机自动调整（自动曝光/白平衡）
+sensor.skip_frames(time=3000)          # 等待3秒让相机自动调整（自动曝光/白平衡）
 
 #---------------------参考点--------------------
-x_under =135
-y_under =185
+x_under =145
+y_under =223
 
 #---------------------时间变量--------------------
 rtc = pyb.RTC()
@@ -149,6 +149,8 @@ clock = time.clock()
 
 
 img = sensor.snapshot().lens_corr(1.8)  # 捕获一帧图像
+
+
 # 将基本参数发送到串口（stm32）,
 data0 = bytearray([
     0xf0,  # 帧头1
@@ -177,7 +179,8 @@ while True:
     max_pixels = 0     # 记录最大像素数
     target_blob = None # 存储目标色块对象
 
-
+    keypoints=[(x_under, y_under,270)]  # 参考点坐标//三元组
+    img.draw_keypoints(keypoints, size=10, color=(0, 255, 0))  # 绘制关键点（可选）
 
     # 使用模型进行预测，并传入后处理回调函数
     for i, detection_list in enumerate(net.predict([img], callback=fomo_post_process)):
@@ -185,7 +188,7 @@ while True:
         if not detection_list: continue  # 无检测时跳过
 
         # ---- 在这里添加：仅对第一类（i==1）提取最大框中心点 ----
-        if i == 1:
+        if i == 2:
             daily_target_count += 1
             daily_label_1_detects += len(detection_list)
 

@@ -133,7 +133,7 @@ while True:
         if not detection_list: continue  # 无检测时跳过
 
         # ---- 在这里添加：仅对第一类（i==1）提取最大框中心点 ----
-        if i == 1:
+        if i == 2:
             # 按面积 (w*h) 找到最大的检测框
             x, y, w, h, score = max(detection_list, key=lambda b: b[2]*b[3])
             center_x = x + w // 2
