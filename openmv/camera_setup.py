@@ -1,4 +1,4 @@
-import sensor, display
+import sensor
 # camera_setup.py
 
 
